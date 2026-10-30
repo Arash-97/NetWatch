@@ -1,6 +1,21 @@
-.venv/
+# Python
 __pycache__/
 *.py[cod]
+
+# Virtual environment
+.venv/
+venv/
+
+# Django
+db.sqlite3
+
+# Local data
+data/*.jsonl
+data/*.csv
+
+# Environment variables
 .env
+
+# IDE
 .idea/
-.pytest_cache/
+.vscode/

@@ -1,0 +1,437 @@
+
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0b1120">
+    <title>NetWatch | Network Diagnostics</title>
+
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: #0b1120;
+            color: #e5e7eb;
+            font-family: Inter, Segoe UI, Arial, sans-serif;
+        }
+
+        .container {
+            width: min(100% - 32px, 1000px);
+            margin: auto;
+            padding: 55px 0;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 65px;
+        }
+
+        .brand-icon {
+            width: 44px;
+            height: 44px;
+            display: grid;
+            place-items: center;
+            background: #172554;
+            color: #60a5fa;
+            border-radius: 13px;
+            font-size: 25px;
+        }
+
+        .brand h2 {
+            margin: 0;
+            font-size: 21px;
+            letter-spacing: 1px;
+        }
+
+        .brand small {
+            display: block;
+            color: #64748b;
+            font-size: 10px;
+            letter-spacing: 1.5px;
+            margin-top: 4px;
+        }
+
+        .hero {
+            text-align: center;
+            margin-bottom: 38px;
+        }
+
+        .hero h1 {
+            font-size: clamp(28px, 5vw, 43px);
+            margin-bottom: 14px;
+            letter-spacing: -1px;
+        }
+
+        .hero h1 span { color: #60a5fa; }
+
+        .hero p {
+            color: #94a3b8;
+            line-height: 1.8;
+            font-size: 15px;
+        }
+
+        .search-card {
+            background: #111c30;
+            border: 1px solid #25344c;
+            padding: 25px;
+            border-radius: 18px;
+            max-width: 720px;
+            margin: auto;
+        }
+
+        .search-card label {
+            display: block;
+            margin-bottom: 13px;
+            font-size: 14px;
+            color: #cbd5e1;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        input {
+            flex: 1;
+            min-width: 0;
+            padding: 15px;
+            background: #0b1120;
+            border: 1px solid #334155;
+            border-radius: 10px;
+            color: white;
+            font-size: 15px;
+            direction: ltr;
+            outline: none;
+        }
+
+        input:focus { border-color: #3b82f6; }
+
+        button {
+            padding: 0 25px;
+            border: none;
+            border-radius: 10px;
+            background: #2563eb;
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: .2s;
+        }
+
+        button:hover { background: #1d4ed8; }
+
+        button:disabled {
+            opacity: .5;
+            cursor: not-allowed;
+        }
+
+        .status {
+            text-align: center;
+            color: #94a3b8;
+            margin: 25px 0;
+            min-height: 25px;
+            font-size: 14px;
+        }
+
+        .results {
+            display: none;
+            margin-top: 38px;
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 18px;
+        }
+
+        .result-header h2 { font-size: 19px; }
+
+        .badge {
+            padding: 8px 13px;
+            border-radius: 30px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .success {
+            background: #064e3b;
+            color: #6ee7b7;
+        }
+
+        .failure {
+            background: #7f1d1d;
+            color: #fca5a5;
+        }
+
+        .checks {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+        }
+
+        .check-card {
+            padding: 20px;
+            background: #111c30;
+            border: 1px solid #25344c;
+            border-radius: 14px;
+        }
+
+        .check-card h3 {
+            margin: 0 0 18px;
+            color: #94a3b8;
+            font-size: 14px;
+        }
+
+        .check-value {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .check-detail {
+            margin-top: 12px;
+            font-size: 12px;
+            color: #64748b;
+            overflow-wrap: anywhere;
+        }
+
+        .diagnosis {
+            margin-top: 18px;
+            padding: 22px;
+            background: #111c30;
+            border: 1px solid #25344c;
+            border-radius: 14px;
+        }
+
+        .diagnosis h3 { margin-top: 0; }
+
+        .diagnosis p {
+            color: #94a3b8;
+            line-height: 1.8;
+        }
+
+        .error { color: #fca5a5 !important; }
+
+        @media (max-width: 700px) {
+            .checks { grid-template-columns: repeat(2, 1fr); }
+            .input-group { flex-direction: column; }
+            button { min-height: 48px; }
+            .brand { margin-bottom: 45px; }
+        }
+
+        @media (max-width: 380px) {
+            .checks { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+
+<body>
+<div class="container">
+
+    <header class="brand">
+        <div class="brand-icon">⌁</div>
+        <div>
+            <h2>NetWatch</h2>
+            <small>NETWORK DIAGNOSTICS PLATFORM</small>
+        </div>
+    </header>
+
+    <section class="hero">
+        <h1>Understand Your <span>Network.</span></h1>
+        <p>
+            Diagnose connection issues, inspect network stages,
+            and discover where your connection might be failing.
+        </p>
+    </section>
+
+    <section class="search-card">
+        <form id="diagnostic-form">
+            <label for="host">Target Domain</label>
+
+            <div class="input-group">
+                <input
+                    type="text"
+                    id="host"
+                    placeholder="e.g. google.com"
+                    autocomplete="url"
+                    required
+                >
+
+                <button type="submit" id="submit-button">
+                    Run Diagnostics
+                </button>
+            </div>
+        </form>
+    </section>
+
+    <div class="status" id="status">
+        Enter a domain to start network diagnostics.
+    </div>
+
+    <section class="results" id="results">
+
+        <div class="result-header">
+            <h2>Diagnostic Report</h2>
+            <span class="badge" id="overall-status"></span>
+        </div>
+
+        <div class="checks" id="checks"></div>
+
+        <div class="diagnosis">
+            <h3>Diagnosis</h3>
+            <p id="diagnosis-message"></p>
+            <small id="confidence"></small>
+        </div>
+
+    </section>
+
+</div>
+
+<script>
+    const form = document.getElementById('diagnostic-form');
+    const hostInput = document.getElementById('host');
+    const submitButton = document.getElementById('submit-button');
+    const statusElement = document.getElementById('status');
+    const resultsElement = document.getElementById('results');
+
+    const checkNames = {
+        dns: 'DNS Resolution',
+        tcp: 'TCP Connection',
+        tls: 'TLS Handshake',
+        http: 'HTTP Request'
+    };
+
+    const confidenceNames = {
+        high: 'High',
+        medium: 'Medium',
+        low: 'Low'
+    };
+
+    function escapeHTML(value) {
+        return String(value ?? '').replace(/[&<>"']/g, char => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        })[char]);
+    }
+
+    function renderChecks(checks) {
+        const container = document.getElementById('checks');
+
+        container.innerHTML = Object.entries(checkNames).map(([key, name]) => {
+            const result = checks[key];
+
+            if (!result) {
+                return `
+                    <div class="check-card">
+                        <h3>${name}</h3>
+                        <div class="check-value">Not Tested</div>
+                        <div class="check-detail">This stage was skipped.</div>
+                    </div>
+                `;
+            }
+
+            const success = result.success;
+            let timing = null;
+
+            if (key === 'dns') timing = result.dns_time_ms;
+            if (key === 'tcp') timing = result.tcp_time_ms;
+            if (key === 'tls') timing = result.tls_time_ms;
+            if (key === 'http') timing = result.http_time_ms;
+
+            return `
+                <div class="check-card">
+                    <h3>${name}</h3>
+
+                    <div class="check-value ${success ? 'success' : 'failure'}">
+                        ${success ? 'Passed' : 'Failed'}
+                    </div>
+
+                    <div class="check-detail">
+                        ${timing != null ? `${Number(timing).toFixed(1)} ms` : ''}
+                        ${key === 'http' && result.status_code
+                            ? ` | HTTP ${escapeHTML(result.status_code)}`
+                            : ''}
+                    </div>
+
+                    ${result.error
+                        ? `<div class="check-detail error">${escapeHTML(result.error)}</div>`
+                        : ''}
+                </div>
+            `;
+        }).join('');
+    }
+
+    form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const host = hostInput.value.trim();
+
+        if (!host) return;
+
+        submitButton.disabled = true;
+        submitButton.textContent = 'Checking...';
+
+        statusElement.classList.remove('error');
+        statusElement.textContent = 'Running network diagnostics...';
+        resultsElement.style.display = 'none';
+
+        try {
+            const response = await fetch('/diagnostics/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ host })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Unable to complete the request.');
+            }
+
+            renderChecks(data.checks);
+
+            const overallStatus = document.getElementById('overall-status');
+
+            overallStatus.textContent =
+                data.status === 'healthy'
+                    ? 'No Issues Detected'
+                    : 'Issue Detected';
+
+            overallStatus.className =
+                'badge ' + (data.status === 'healthy' ? 'success' : 'failure');
+
+            document.getElementById('diagnosis-message').textContent =
+                data.diagnosis.message;
+
+            document.getElementById('confidence').textContent =
+                'Confidence: ' +
+                (confidenceNames[data.diagnosis.confidence] || 'Unknown');
+
+            resultsElement.style.display = 'block';
+            statusElement.textContent = `Diagnostics completed for ${host}.`;
+
+        } catch (error) {
+            statusElement.classList.add('error');
+            statusElement.textContent = error.message;
+
+        } finally {
+            submitButton.disabled = false;
+            submitButton.textContent = 'Run Diagnostics';
+        }
+    });
+</script>
+
+</body>
+</html>
